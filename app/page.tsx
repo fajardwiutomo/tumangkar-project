@@ -1,6 +1,6 @@
 import Sidebar from "@/components/Sidebar";
 
-export default function Home() {
+export default async function Home() {
   return (
     <>
       <Sidebar />

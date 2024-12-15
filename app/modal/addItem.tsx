@@ -1,16 +1,22 @@
-import { useState } from "react";
+'use client'
 
-export default function AddItemModal({ isOpen, onClose, onAdd }: {
-    isOpen: boolean;
-    onClose: () => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onAdd: (item: any) => void;
+import axios from "axios";
+import { useState } from "react";
+import Swal from 'sweetalert2'
+
+export default function AddItemModal({ isOpen, onClose, getStock }: {
+  isOpen: boolean;
+  onClose: () => void;
+  getStock: () => void;
+  // onAdd: (item: { name: string; qty: string; price: string; unit: string }) => void; // Mengonversi input menjadi bentuk object
 }) {
   const [itemName, setItemName] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [price, setPrice] = useState("");
   const [unit, setUnit] = useState("");
+  // const [firstSubmit, setFirstSubmit] = useState(false);
 
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     if (!itemName || !quantity || !unit) {
       alert("Semua field harus diisi!");
       return;
@@ -18,17 +24,38 @@ export default function AddItemModal({ isOpen, onClose, onAdd }: {
 
     const newItem = {
       name: itemName,
-      qty: quantity,
+      quantity: quantity,
+      price: price,
       unit: unit,
     };
 
-    onAdd(newItem); // Callback untuk menambahkan barang
+    try {
+      const res = await axios.post("/api/stock", newItem);
+      console.log(newItem,">>>>");
+
+      if (res?.status === 201) {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: res?.data?.message,
+        });
+      }
+      getStock(); // Reload data setelah berhasil menghapus
+    } catch (error) {
+      console.error("Error adding item:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: 'gagal menambahkan barang',
+      });
+    }
+
     onClose(); // Tutup modal
     setItemName("");
     setQuantity("");
+    setPrice("");
     setUnit("");
-  };
-
+};
   if (!isOpen) return null;
 
   return (
@@ -58,6 +85,9 @@ export default function AddItemModal({ isOpen, onClose, onAdd }: {
               className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               placeholder="Contoh: Gula"
             />
+            {/* {
+              firstSubmit && !itemName && <div className="p-1 pl-4 mt-2 text-sm border italic text-red-700 border-red-300 bg-red-100 rounded-md tex">tidak boleh kosong</div>
+            } */}
           </div>
 
           <div>
@@ -70,6 +100,18 @@ export default function AddItemModal({ isOpen, onClose, onAdd }: {
               onChange={(e) => setQuantity(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               placeholder="Contoh: 10"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Harga
+            </label>
+            <input
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              placeholder="Contoh: 10000"
             />
           </div>
 

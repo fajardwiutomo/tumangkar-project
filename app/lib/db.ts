@@ -11,9 +11,7 @@ async function dbConnect() {
 
     console.log("Connecting to MongoDB...");
     // Use new db connection
-    const db = await mongoose.connect(process.env.MONGODB_URI!);
-    connection.isConnected = db.connections[0].readyState;
-    console.log(`MongoDB connected with state: ${connection.isConnected}`);
+    await mongoose.connect(process.env.MONGODB_URI || "");
 }
 
 export default dbConnect;

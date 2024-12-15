@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Swal from 'sweetalert2'
 
 export default function SignIn() {
     const [username, setUsername] = useState('');
@@ -21,11 +22,15 @@ export default function SignIn() {
             password
         });
 
-        if(res?.ok){
+        if (res?.ok) {
             setPending(false);
             router.push("/");
-            alert("Selamat datang!");
-        } else if(res?.error){
+            Swal.fire({
+                icon: "success",
+                title: "Success",
+                text: "Selamat datang!",
+            });
+        } else if (res?.error) {
             setPending(false);
             alert(res.error);
         }

@@ -20,6 +20,6 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
         timestamps: true, // Ditempatkan di sini, sebagai opsi schema
     });
 
-const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
+const User: Model<IUser> =    mongoose.models.User || mongoose.model<IUser>("User", userSchema);
 
 export default User;

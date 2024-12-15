@@ -3,6 +3,7 @@
 import axios from "axios";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Swal from 'sweetalert2'
 
 export default function SignUp() {
     const [form, setForm] = useState({
@@ -20,15 +21,23 @@ export default function SignUp() {
         try {
             const res = await axios.post("/api/signup", form);
 
-            if (res.status === 200) {
-                alert(res.data.message);
+            if (res?.status === 201) {
                 router.push("/sign-in");
+                Swal.fire({
+                    icon: "success",
+                    title: "Success",
+                    text: res?.data?.message
+                });
             } else {
                 alert(res.data.message);
             }
         } catch (error) {
             console.error("Error signing up:", error);
-            alert("Terjadi kesalahan. Silakan coba lagi.");
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: 'Terjadi kesalahan saat mendaftar akun'
+            });
         }
         setPending(false);
     }
@@ -93,7 +102,7 @@ export default function SignUp() {
                                 type="submit"
                                 className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                             >
-                                Daftar
+                                Daftar Akun
                             </button>
                         </div>
                     </form>

@@ -1,7 +1,11 @@
+'use client'
+
 import { BoxesIcon, PresentationIcon, LogOut } from 'lucide-react'
+import { signOut } from "next-auth/react";
 import Link from 'next/link'
 
 export default function Sidebar() {
+
     return <div className="flex h-screen">
         {/* <!-- Sidebar --> */}
         <div className="w-64 border shadow h-screen flex flex-col justify-between">
@@ -52,13 +56,14 @@ export default function Sidebar() {
                 <ul>
                     {/* <!-- Menu Items --> */}
                     <li className="hover:bg-slate-100 hover:text-indigo-600 font-semibold text-slate-600">
-                        <Link href="/sign-in" className="flex items-center px-4 py-2 gap-5">
+                        <div onClick={() => signOut({ callbackUrl: "/sign-in" })} className="flex items-center px-4 py-2 gap-5">
                             <LogOut className='h-6 w-6' />
                             Keluar
-                        </Link>
+                        </div>
                     </li>
                 </ul>
             </nav>
         </div>
     </div>
+
 }

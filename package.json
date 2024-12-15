@@ -20,7 +20,8 @@
     "next-auth": "^4.24.11",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "save-dev": "^0.0.1-security"
+    "save-dev": "^0.0.1-security",
+    "sweetalert2": "^11.15.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
