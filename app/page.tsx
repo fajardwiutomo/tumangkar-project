@@ -1,6 +1,9 @@
+'use client'
 import Sidebar from "@/components/Sidebar";
 
-export default async function Home() {
+
+export default function Home() {
+
   return (
     <>
       <Sidebar />

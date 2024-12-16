@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { TrashIcon, PencilIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { TrashIcon, PencilIcon, PlusIcon, SearchIcon, CircleArrowOutUpRightIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import AddItemModal from "../modal/addItem";
 import DeleteItemModal from "../modal/deleteItem";
@@ -9,6 +9,8 @@ import Pagination from "@/components/Pagination";
 import axios from "axios";
 import Swal from "sweetalert2";
 import EditItemModal from "../modal/editItem";
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation";
 
 export interface IStock {
     _id: string;
@@ -29,6 +31,18 @@ export default function InventoryTable() {
     const [loadingDelete, setLoadingDelete] = useState(false);
     const [itemToEdit, setItemToEdit] = useState<IStock | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const { data: session, status } = useSession()
+    const router = useRouter();
+
+    useEffect(() => {
+        if (status === "authenticated") {
+            router.push("/stock");
+        } else if (status === "unauthenticated") {
+            router.push("/sign-in");
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session, status])
 
     // Handle fetch stock
     const getStock = async () => {
@@ -73,6 +87,18 @@ export default function InventoryTable() {
         }
     };
 
+    const searchStock = async (query: string) => {
+        try {
+            const res = await axios.get(`/api/search-stock?search=${query}`);
+            if (res.status === 200) {
+                setSearch('');
+                setStock(res?.data?.stocks);
+            }
+        } catch (error) {
+            console.error("Error searching stocks:", error);
+        }
+    };
+
 
     const itemsPerPage = 5; // Jumlah item per halaman
     const totalItems = stock.length; // Total dari stock yang diambil
@@ -84,21 +110,37 @@ export default function InventoryTable() {
         console.log(`Navigasi ke halaman ${page}`);
     };
 
+
+
+
     return (
         <div className="p-4 w-full">
             <div className="overflow-x-auto p-4 w-full">
                 <div className="flex justify-between">
                     <div className="flex gap-4 items-center justify-center mb-4">
-                        <input type="text" placeholder="Cari barang..." className="border border-gray-300 px-4 py-2 rounded-lg" />
-                        <button className="flex justify-center items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg">
+                        <input value={search} onChange={(e) => setSearch(e.target.value)} type="text" placeholder="Cari barang..." className="border border-gray-300 px-4 py-2 rounded-lg" />
+                        <button
+                            disabled={!search}
+                            onClick={() => searchStock(search)}
+                            className="flex justify-center items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg disabled:cursor-not-allowed disabled:bg-gray-400">
                             <SearchIcon className="h-4 w-4" /> Search
                         </button>
                     </div>
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="flex justify-center items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg mb-4">
-                        <PlusIcon className="h-4 w-4" /> Tambah Barang
-                    </button>
+                    <div className="flex gap-4 items-center">
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="flex justify-center items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg mb-4">
+                            <PlusIcon className="h-4 w-4" /> Tambah Barang
+                        </button>
+                        <button
+                            onClick={() => {
+                                getStock();
+                                setSearch('');
+                            }}
+                            className="flex justify-center items-center gap-2 bg-white px-4 py-2 rounded-lg mb-4 text-red-500 border border-gray-500">
+                            <CircleArrowOutUpRightIcon className="h-4 w-4" /> Reset
+                        </button>
+                    </div>
                 </div>
                 {isLoading ? (
                     <p>Loading...</p> // Tampilkan loading jika data belum tersedia
@@ -130,7 +172,7 @@ export default function InventoryTable() {
                                     <td className="border border-gray-300 px-4 py-2 text-center">{item.quantity}</td>
                                     <td className="border border-gray-300 px-4 py-2 text-center">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.price)}</td>
                                     <td className="border border-gray-300 px-4 py-2 text-center">{item.unit}</td>
-                                    <td className="border border-gray-300 py-2 flex justify-center gap-8">
+                                    <td className="border border-gray-300 py-2 flex justify-center gap-4">
                                         <button
                                             onClick={() => {
                                                 setItemToEdit(item); // Set item yang akan diedit

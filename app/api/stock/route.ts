@@ -1,3 +1,5 @@
+'use server'
+
 import Stock from "@/app/models/Stock";
 import { NextResponse } from "next/server";
 import dbConnect from "@/app/lib/db";
@@ -111,3 +113,5 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "Failed to update stock" }, { status: 500 });
     }
 }
+
+

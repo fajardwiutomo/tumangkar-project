@@ -1,16 +1,29 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2'
+import { useSession } from "next-auth/react"
+import { useEffect } from "react";
 
 export default function SignIn() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [pending, setPending] = useState(false);
-
+    const { data: session, status } = useSession()
     const router = useRouter();
+
+    console.log(session, status)
+
+    useEffect(() => {
+        if (status === "authenticated") {
+            router.push("/stock");
+        } else if (status === "unauthenticated") {
+            router.push("/sign-in");
+        }
+    }, [session, status])
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -24,7 +37,7 @@ export default function SignIn() {
 
         if (res?.ok) {
             setPending(false);
-            router.push("/");
+            router.push("/stock");
             Swal.fire({
                 icon: "success",
                 title: "Success",
@@ -32,7 +45,11 @@ export default function SignIn() {
             });
         } else if (res?.error) {
             setPending(false);
-            alert(res.error);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: res.error,
+            });
         }
     };
 
