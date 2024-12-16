@@ -8,8 +8,9 @@ import DeleteItemModal from "../modal/deleteItem";
 import Pagination from "@/components/Pagination";
 import axios from "axios";
 import Swal from "sweetalert2";
+import EditItemModal from "../modal/editItem";
 
-interface IStock {
+export interface IStock {
     _id: string;
     name: string;
     quantity: number;
@@ -24,7 +25,10 @@ export default function InventoryTable() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState<any>(null);
     const [stock, setStock] = useState<any>([]); // Ganti dari 'DataMock' ke state 'stock' yang kosong
-    const [isLoading, setIsLoading] = useState(true); // State loading
+    const [isLoading, setIsLoading] = useState(false); // State loading
+    const [loadingDelete, setLoadingDelete] = useState(false);
+    const [itemToEdit, setItemToEdit] = useState<IStock | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     // Handle fetch stock
     const getStock = async () => {
@@ -48,6 +52,7 @@ export default function InventoryTable() {
 
     const handleDeleteItem = async () => {
         if (itemToDelete) {
+            setLoadingDelete(true);
             try {
                 const res = await axios.delete("/api/stock", { data: { id: itemToDelete._id } });
                 if (res?.status === 200) {
@@ -56,11 +61,13 @@ export default function InventoryTable() {
                         title: "Success",
                         text: 'Berhasil menghapus barang',
                     });
+                    setLoadingDelete(false);
                     getStock(); // Reload data setelah berhasil menghapus
                     setItemToDelete(null);
                     setIsDeleteModalOpen(false);
                 }
             } catch (error) {
+                setLoadingDelete(false);
                 console.error("Error deleting stock:", error);
             }
         }
@@ -76,8 +83,6 @@ export default function InventoryTable() {
         setCurrentPage(page);
         console.log(`Navigasi ke halaman ${page}`);
     };
-
-    console.log(itemToDelete, "ITEM TO DELETE");
 
     return (
         <div className="p-4 w-full">
@@ -126,8 +131,13 @@ export default function InventoryTable() {
                                     <td className="border border-gray-300 px-4 py-2 text-center">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.price)}</td>
                                     <td className="border border-gray-300 px-4 py-2 text-center">{item.unit}</td>
                                     <td className="border border-gray-300 py-2 flex justify-center gap-8">
-                                        <button className="bg-blue-500 text-white px-2 py-1 rounded mr-2 hover:bg-blue-600 flex gap-2 justify-center items-center">
-                                            <PencilIcon className="h-4 w-4" /> Edit
+                                        <button
+                                            onClick={() => {
+                                                setItemToEdit(item); // Set item yang akan diedit
+                                                setIsEditModalOpen(true); // Buka modal edit
+                                            }}
+                                            className="bg-blue-500 text-white px-2 py-1 rounded mr-2 hover:bg-blue-600 flex gap-2 justify-center items-center">
+                                            <PencilIcon className="h-4 w-4" /> Ubah
                                         </button>
                                         <button
                                             onClick={() => {
@@ -161,12 +171,21 @@ export default function InventoryTable() {
             // onAdd={handleAddItem}
             />
 
+            <EditItemModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                getStock={getStock}
+                itemToEdit={itemToEdit}
+            />
+
             {/* Modal Delete */}
             <DeleteItemModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onDelete={handleDeleteItem}
                 itemName={itemToDelete?.name}
+                loadingDelete={loadingDelete}
+                setLoadingDelete={setLoadingDelete}
             />
         </div>
     );

@@ -4,7 +4,7 @@ import dbConnect from "@/app/lib/db";
 export async function POST(req: Request) {
     try {
         await dbConnect();
-        
+
         const { name, quantity, price, unit } = await req.json();
 
         console.log("Stock data:", { name, quantity, price, unit });
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 export async function GET() {
     try {
         await dbConnect();
-        
+
         const stocks = await Stock.find(); // Mengambil semua stok dari database
 
         return NextResponse.json({ message: "Stocks retrieved successfully", stocks }, { status: 200 });
@@ -72,5 +72,42 @@ export async function DELETE(req: Request) {
     } catch (error) {
         console.error("Error deleting stock:", error);
         return NextResponse.json({ error: "Failed to delete stock" }, { status: 500 });
+    }
+}
+
+export async function PATCH(req: Request) {
+    try {
+        await dbConnect();
+
+        // Ambil data dari request body
+        const { id, name, quantity, price, unit } = await req.json();
+        console.log("Stock data:", { id, name, quantity, price, unit });
+
+        // Validasi input
+        if (!id) {
+            return NextResponse.json({ error: "Stock ID is required" }, { status: 400 });
+        }
+
+        // Cari stok berdasarkan ID
+        const stock = await Stock.findById(id);
+
+        if (!stock) {
+            return NextResponse.json({ error: "Stock not found" }, { status: 404 });
+        }
+
+        // Update field yang diberikan
+        if (name !== undefined) stock.name = name;
+        if (quantity !== undefined) stock.quantity = quantity;
+        if (price !== undefined) stock.price = price;
+        if (unit !== undefined) stock.unit = unit;
+
+        // Simpan perubahan
+        await stock.save();
+
+        return NextResponse.json({ message: "Stock updated successfully", stock }, { status: 200 });
+
+    } catch (error) {
+        console.error("Error updating stock:", error);
+        return NextResponse.json({ error: "Failed to update stock" }, { status: 500 });
     }
 }
