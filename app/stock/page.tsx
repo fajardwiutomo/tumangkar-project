@@ -11,6 +11,9 @@ import Swal from "sweetalert2";
 import EditItemModal from "../modal/editItem";
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation";
+import { useAtom } from "jotai";
+import { loadingState } from "../state-management/state";
+import Loader from "../modal/loader";
 
 export interface IStock {
     _id: string;
@@ -34,6 +37,7 @@ export default function InventoryTable() {
     const [search, setSearch] = useState('');
     const { data: session, status } = useSession()
     const router = useRouter();
+    const [isOpen, ] = useAtom(loadingState);
 
     useEffect(() => {
         if (status === "authenticated") {
@@ -228,6 +232,9 @@ export default function InventoryTable() {
                 itemName={itemToDelete?.name}
                 loadingDelete={loadingDelete}
                 setLoadingDelete={setLoadingDelete}
+            />
+            <Loader
+                isOpen={isOpen}
             />
         </div>
     );

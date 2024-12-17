@@ -114,8 +114,8 @@ export default function FinalPembayaran({ isOpen, onClose, totalAmount, handleCh
               handleCheckout();
               onClose();
             }}
-            className="flex justify-center items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg mb-4"
-            disabled={isCheckoutLoading}
+            className="flex justify-center items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg mb-4 disabled:cursor-not-allowed disabled:bg-gray-400"
+            disabled={isCheckoutLoading || amountPaid < totalAmount}
           >
             {isCheckoutLoading ? 'Processing...' : (
               <>

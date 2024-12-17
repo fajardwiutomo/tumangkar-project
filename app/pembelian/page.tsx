@@ -6,6 +6,11 @@ import { PlusIcon, Trash2Icon, ShoppingCartIcon } from 'lucide-react';
 import axios from 'axios';
 import Swal from "sweetalert2";
 import FinalPembayaran from '../modal/finalPembayaran';
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation";
+import { loadingState } from '../state-management/state';
+import { useAtom } from 'jotai';
+import Loader from '../modal/loader';
 export interface IStock {
     _id: string;
     name: string;
@@ -25,6 +30,18 @@ export default function Pembelian() {
     const [isModalFinalPembayaran, setIsModalFinalPembayaran] = useState(false);
     const [cart, setCart] = useState<IStock[]>([]);
     const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+    const [isOpen, setIsOpen] = useAtom(loadingState);
+    const { data: session, status } = useSession()
+    const router = useRouter();
+
+    useEffect(() => {
+        if (status === "authenticated") {
+            router.push("/pembelian");
+        } else if (status === "unauthenticated") {
+            router.push("/sign-in");
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session, status])
 
     useEffect(() => {
         setIsClient(true);
@@ -57,7 +74,7 @@ export default function Pembelian() {
     // Handle checkout
     const handleCheckout = async () => {
         setIsCheckoutLoading(true);
-
+        setIsOpen(true);
         try {
             const response = await axios.delete('/api/reduce-stock', {
                 headers: {
@@ -78,6 +95,7 @@ export default function Pembelian() {
                     title: "Success",
                     text: 'Berhasil dibayarkan',
                 });
+                setIsOpen(false);
             } else {
                 // alert(response.data.error || 'Failed to reduce stock.');
                 Swal.fire({
@@ -85,6 +103,7 @@ export default function Pembelian() {
                     title: "Error",
                     text: response.data.error,
                 });
+                setIsOpen(false);
             }
         } catch (error) {
             console.error('Error during checkout:', error);
@@ -197,6 +216,9 @@ export default function Pembelian() {
                 totalAmount={totalAmount}
                 handleCheckout={handleCheckout}
                 isCheckoutLoading={isCheckoutLoading}
+            />
+            <Loader
+                isOpen={isOpen}
             />
         </div>
     );

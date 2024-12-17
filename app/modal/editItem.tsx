@@ -97,8 +97,6 @@ export default function EditItemModal({ isOpen, onClose, getStock, itemToEdit }:
             unit: unit,
         };
 
-        console.log(EditItem, "EditItem");
-
         try {
             const res = await axios.patch("/api/stock", EditItem);
 
@@ -108,6 +106,7 @@ export default function EditItemModal({ isOpen, onClose, getStock, itemToEdit }:
                     title: "Success",
                     text: 'Berhasil mengedit barang',
                 });
+                onClose();
                 setLoading(false);
                 getStock(); // Refresh data stok setelah berhasil diubah
             }
